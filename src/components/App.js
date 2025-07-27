@@ -8,26 +8,60 @@ function App() {
   const [questions, setQuestions] = useState([]);
 
   useEffect(() => {
-    let isMounted = true;
     fetch("http://localhost:4000/questions")
-      .then((res) => res.json())
-      .then((data) => {
-        if (isMounted) setQuestions(data);
-      })
-      .catch(console.error);
-
-    return () => {
-      isMounted = false;
-    };
+      .then((r) => r.json())
+      .then((data) => setQuestions(data));
   }, []);
+
+  function handleAddQuestion(newQuestion) {
+    fetch("http://localhost:4000/questions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newQuestion),
+    })
+      .then((r) => r.json())
+      .then((data) => setQuestions([...questions, data]));
+  }
+
+  function handleDeleteQuestion(id) {
+    fetch(`http://localhost:4000/questions/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      setQuestions(questions.filter((question) => question.id !== id));
+    });
+  }
+
+  function handleUpdateQuestion(id, updatedData) {
+    const updatedQuestions = questions.map((q) => {
+      if (q.id === id) {
+        return { ...q, ...updatedData };
+      }
+      return q;
+    });
+    setQuestions(updatedQuestions);
+    
+    fetch(`http://localhost:4000/questions/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedData),
+    });
+  }
 
   return (
     <main>
       <AdminNavBar onChangePage={setPage} />
       {page === "Form" ? (
-        <QuestionForm setQuestions={setQuestions} />
+        <QuestionForm onAddQuestion={handleAddQuestion} />
       ) : (
-        <QuestionList questions={questions} setQuestions={setQuestions} />
+        <QuestionList 
+          questions={questions} 
+          onDeleteQuestion={handleDeleteQuestion}
+          onUpdateQuestion={handleUpdateQuestion}
+        />
       )}
     </main>
   );

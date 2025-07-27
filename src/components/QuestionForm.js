@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function QuestionForm({ setQuestions }) {
+function QuestionForm({ onAddQuestion }) {
   const [formData, setFormData] = useState({
     prompt: "",
     answer1: "",
@@ -10,46 +10,42 @@ function QuestionForm({ setQuestions }) {
     correctIndex: 0,
   });
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setFormData((f) => ({
-      ...f,
-      [name]: name === "correctIndex" ? Number(value) : value,
-    }));
+  function handleChange(event) {
+    setFormData({
+      ...formData,
+      [event.target.name]: event.target.value,
+    });
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-
+  function handleSubmit(event) {
+    event.preventDefault();
+    
     const newQuestion = {
       prompt: formData.prompt,
-      answers: [formData.answer1, formData.answer2, formData.answer3, formData.answer4],
-      correctIndex: formData.correctIndex,
+      answers: [
+        formData.answer1,
+        formData.answer2,
+        formData.answer3,
+        formData.answer4,
+      ],
+      correctIndex: parseInt(formData.correctIndex),
     };
-
-    fetch("http://localhost:4000/questions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newQuestion),
-    })
-      .then((res) => res.json())
-      .then((newQ) => {
-        setQuestions((prev) => [...prev, newQ]);
-        setFormData({
-          prompt: "",
-          answer1: "",
-          answer2: "",
-          answer3: "",
-          answer4: "",
-          correctIndex: 0,
-        });
-      })
-      .catch(console.error);
+    
+    onAddQuestion(newQuestion);
+    
+    setFormData({
+      prompt: "",
+      answer1: "",
+      answer2: "",
+      answer3: "",
+      answer4: "",
+      correctIndex: 0,
+    });
   }
 
   return (
     <section>
-      <h1>Add New Question</h1>
+      <h1>New Question</h1>
       <form onSubmit={handleSubmit}>
         <label>
           Prompt:
@@ -58,10 +54,8 @@ function QuestionForm({ setQuestions }) {
             name="prompt"
             value={formData.prompt}
             onChange={handleChange}
-            required
           />
         </label>
-
         <label>
           Answer 1:
           <input
@@ -69,10 +63,8 @@ function QuestionForm({ setQuestions }) {
             name="answer1"
             value={formData.answer1}
             onChange={handleChange}
-            required
           />
         </label>
-
         <label>
           Answer 2:
           <input
@@ -80,10 +72,8 @@ function QuestionForm({ setQuestions }) {
             name="answer2"
             value={formData.answer2}
             onChange={handleChange}
-            required
           />
         </label>
-
         <label>
           Answer 3:
           <input
@@ -91,10 +81,8 @@ function QuestionForm({ setQuestions }) {
             name="answer3"
             value={formData.answer3}
             onChange={handleChange}
-            required
           />
         </label>
-
         <label>
           Answer 4:
           <input
@@ -102,10 +90,8 @@ function QuestionForm({ setQuestions }) {
             name="answer4"
             value={formData.answer4}
             onChange={handleChange}
-            required
           />
         </label>
-
         <label>
           Correct Answer:
           <select
@@ -113,13 +99,12 @@ function QuestionForm({ setQuestions }) {
             value={formData.correctIndex}
             onChange={handleChange}
           >
-            <option value={0}>Answer 1</option>
-            <option value={1}>Answer 2</option>
-            <option value={2}>Answer 3</option>
-            <option value={3}>Answer 4</option>
+            <option value="0">{formData.answer1}</option>
+            <option value="1">{formData.answer2}</option>
+            <option value="2">{formData.answer3}</option>
+            <option value="3">{formData.answer4}</option>
           </select>
         </label>
-
         <button type="submit">Add Question</button>
       </form>
     </section>
